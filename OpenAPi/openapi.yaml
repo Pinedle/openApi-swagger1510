@@ -1,0 +1,281 @@
+openapi: 3.0.3
+info:
+  title: Game Score Manager API
+  version: "1.3.9"
+  description: API para la gestión de usuarios y puntuaciones en la plataforma de videojuegos.
+  contact:
+    email: lleninesteban@gmail.com
+    name: Lenyn Lozano
+  license:
+    name: apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html' 
+    
+servers:
+  - url: 'https://localhost:3000/api/v1/'
+  - url: 'https://192.168.0.14:3000/api/v1/'
+  
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 404
+        message:
+          type: string
+          example: "Jugador no encontrado."
+
+    PlayerProfile:
+      type: object
+      properties:
+        username:
+          type: string
+          example: "Gamer123"
+        email:
+          type: string
+          example: "gamer123@example.com"
+        avatar:
+          type: string
+          example: "https://url-to-avatar.com/avatar.png"
+        registration_date:
+          type: string
+          format: date-time
+          example: "2024-10-28T14:00:00Z"
+
+    ScoreEntry:
+      type: object
+      properties:
+        score:
+          type: integer
+          example: 4500
+        game_id:
+          type: string
+          example: "game123"
+
+paths:
+  /api/v1/auth/register:
+    post:
+      summary: Registro de un nuevo jugador
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '201':
+          description: Jugador registrado exitosamente.
+        '400':
+          description: Datos de registro inválidos.
+        '409':
+          description: El email o nombre de usuario ya están en uso.
+
+  /api/v1/auth/login:
+    post:
+      summary: Inicio de sesión y generación de token JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Inicio de sesión exitoso.
+        '401':
+          description: Credenciales incorrectas.
+
+  /api/v1/users/profile/{userId}:
+    get:
+      summary: Obtener el perfil del jugador autenticado
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Perfil obtenido exitosamente.
+        '404':
+          description: Jugador no encontrado.
+
+    put:
+      summary: Modificar datos del perfil del jugador
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                
+                email:
+                  type: string
+                avatar:
+                  type: string
+      responses:
+        '200':
+          description: Perfil actualizado correctamente.
+        '400':
+          description: Datos inválidos.
+        '404':
+          description: Jugador no encontrado.
+
+  /api/v1/users/scores/{userId}:
+    get:
+      summary: Listado de todas las puntuaciones del jugador
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de puntuaciones obtenida exitosamente.
+        '404':
+          description: Jugador o puntuaciones no encontradas.
+
+  /api/v1/scores/{userId}:
+    post:
+      summary: Añadir una nueva puntuación desde el videojuego
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                score:
+                  type: integer
+                game_id:
+                  type: string
+      responses:
+        '201':
+          description: Puntuación añadida exitosamente.
+        '400':
+          description: Datos de puntuación inválidos.
+        '404':
+          description: Jugador no encontrado.
+
+  /api/v1/scores/leaderboard:
+    get:
+      summary: Obtener el ranking global de los mejores jugadores
+      responses:
+        '200':
+          description: Ranking de jugadores obtenido exitosamente.
+        '500':
+          description: Error del servidor al generar el ranking.
+
+  /api/v1/users/admin:
+    get:
+      summary: Listar y gestionar jugadores (solo admin)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de jugadores obtenida exitosamente.
+        '401':
+          description: No autorizado.
+        '403':
+          description: Acceso denegado.
+
+  /api/v1/users/admin/{userId}:
+    patch:
+      summary: Habilitar o bloquear usuarios (solo admin)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [active, blocked]
+      responses:
+        '200':
+          description: Estado del usuario actualizado.
+        '401':
+          description: No autorizado.
+        '404':
+          description: Jugador no encontrado.
+
+    delete:
+      summary: Eliminar usuarios (solo admin)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Usuario eliminado exitosamente.
+        '401':
+          description: No autorizado.
+        '404':
+          description: Jugador no encontrado.
+
+  /api/v1/users/admin/scores/{userId}:
+    delete:
+      summary: Eliminar una puntuación específica de un jugador (solo admin)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Puntuación eliminada exitosamente.
+        '401':
+          description: No autorizado.
+        '404':
+          description: Puntuación no encontrada.
