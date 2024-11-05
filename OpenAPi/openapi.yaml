@@ -59,7 +59,7 @@ components:
           example: "game123"
 
 paths:
-  /api/v1/auth/register:
+  /auth/register:
     post:
       summary: Registro de un nuevo jugador
       requestBody:
@@ -84,7 +84,7 @@ paths:
         '409':
           description: El email o nombre de usuario ya están en uso.
 
-  /api/v1/auth/login:
+  /auth/login:
     post:
       summary: Inicio de sesión y generación de token JWT
       requestBody:
@@ -104,7 +104,7 @@ paths:
         '401':
           description: Credenciales incorrectas.
 
-  /api/v1/users/profile/{userId}:
+  /users/profile/{userId}:
     get:
       summary: Obtener el perfil del jugador autenticado
       parameters:
@@ -149,7 +149,7 @@ paths:
         '404':
           description: Jugador no encontrado.
 
-  /api/v1/users/scores/{userId}:
+  /users/scores/{userId}:
     get:
       summary: Listado de todas las puntuaciones del jugador
       parameters:
@@ -164,7 +164,7 @@ paths:
         '404':
           description: Jugador o puntuaciones no encontradas.
 
-  /api/v1/scores/{userId}:
+  /scores/{userId}:
     post:
       summary: Añadir una nueva puntuación desde el videojuego
       parameters:
@@ -192,7 +192,7 @@ paths:
         '404':
           description: Jugador no encontrado.
 
-  /api/v1/scores/leaderboard:
+  /scores/leaderboard:
     get:
       summary: Obtener el ranking global de los mejores jugadores
       responses:
@@ -201,7 +201,7 @@ paths:
         '500':
           description: Error del servidor al generar el ranking.
 
-  /api/v1/users/admin:
+  /users/admin:
     get:
       summary: Listar y gestionar jugadores (solo admin)
       security:
@@ -214,7 +214,7 @@ paths:
         '403':
           description: Acceso denegado.
 
-  /api/v1/users/admin/{userId}:
+  /users/admin/{userId}:
     patch:
       summary: Habilitar o bloquear usuarios (solo admin)
       parameters:
@@ -261,7 +261,7 @@ paths:
         '404':
           description: Jugador no encontrado.
 
-  /api/v1/users/admin/scores/{userId}:
+  /users/admin/scores/{userId}:
     delete:
       summary: Eliminar una puntuación específica de un jugador (solo admin)
       parameters:
